@@ -1,6 +1,6 @@
-# arXiv Translator Skill for Gemini CLI
+# arXiv Translator Agent Skill
 
-This is a custom skill for [Gemini CLI](https://github.com/google/gemini-cli) that enables the AI agent to automatically download LaTeX source files from arXiv, translate them into a target language (defaulting to Chinese), and compile them into a high-quality PDF.
+This is a custom skill designed for AI agents like [Gemini CLI](https://github.com/google/gemini-cli) and [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview). It enables the AI agent to automatically download LaTeX source files from arXiv, translate them into a target language (defaulting to Chinese), and compile them into a high-quality PDF.
 
 ## Features
 
@@ -20,17 +20,18 @@ Ensure your system has the following dependencies installed and accessible in yo
 
 ## Installation
 
-1. Create a directory named `arxiv-translator` inside your Gemini CLI skills folder (usually `~/.gemini/skills/`).
+1. Create a directory named `arxiv-translator` inside your agent's skills folder (e.g., `~/.gemini/skills/` for Gemini CLI, or your equivalent `.claude` workspace configuration).
 2. Copy the `SKILL.md` and the `scripts/` folder into this new directory.
 
 ```bash
+# Example for Gemini CLI
 mkdir -p ~/.gemini/skills/arxiv-translator
 git clone https://github.com/dull-bird/arxiv-translator-skill.git ~/.gemini/skills/arxiv-translator
 ```
 
 ## Usage
 
-Simply invoke the skill in Gemini CLI by mentioning an arXiv paper and asking for a translation:
+Simply invoke the skill in your AI agent (e.g., Gemini CLI, Claude Code) by mentioning an arXiv paper and asking for a translation:
 
 ```
 > Can you translate arXiv paper 2508.11825 into Chinese and generate the PDF?
