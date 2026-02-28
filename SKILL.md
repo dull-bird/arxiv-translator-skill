@@ -21,44 +21,37 @@ Before starting, verify that all required system tools are installed.
   - Source: `https://arxiv.org/src/xxxx.xxxxx`
   - PDF: `https://arxiv.org/pdf/xxxx.xxxxx.pdf`
 
-### 2. Analyze Structure & Indexing (Mandatory)
-- Read the original `.pdf` file to build a mental map of the paper's structure.
-- **Section Indexing (Crucial):** Run `grep -n "\\section" main.tex` (and any other sub-tex files identified) to list all major sections. **Create a checklist** of these sections in your memory.
-- **Dependency Scan:** Scan for `\input{}` or `\include{}` commands to identify all sub-files that need translation.
-- **Terminology Glossary:** Before translating, skim the abstract and introduction to identify 5-10 core technical terms. Create a local mental glossary to ensure consistent translation throughout the paper (e.g., ensuring "Relative Position" is always translated as "相对位置").
-- Copy the entire LaTeX project to a new `translated/` working directory to preserve the original.
+### 2. Analyze & Modularize (For Large Papers)
+- Read the original `.pdf` file to build a mental map.
+- **Modularization Strategy (Crucial for Reliability):**
+    - **DO NOT use the `replace` tool for content translation.** It is prone to whitespace/encoding mismatches.
+    - Instead, **YOU MUST** execute the standardized script located at `scripts/split_tex.py` (relative to this SKILL directory) to safely split the monolithic `.tex` file into sub-files by `\section`. Do not attempt to write a custom splitting script.
+      - **Command to run:** Locate the skill directory and run `python3 <path_to_skill_dir>/scripts/split_tex.py <main_file.tex>`
+    - For small files, you may still use `replace` or directly overwrite the file with `write_file`.
+- **Terminology Glossary:** Create a local mental glossary of 5-10 core technical terms to ensure consistency.
 
-### 3. Translate & Modernize (Iterative Chunking with Checklist)
-- **Sequential Chunking:** NEVER attempt to translate a large `.tex` file in one massive operation. Break the work down section by section according to your checklist from Step 2.
-- **Checkpointing:** After replacing each section, explicitly state: "Finished translating Section X. [X/Total Sections]".
-- **Content Preservation:** Translate text while rigorously preserving LaTeX commands, math environments (`$`, `\begin{equation}`), citations (`\cite{}`), and references (`\ref{}`). Keep reference paper titles and author names untranslated unless necessary.
+### 3. Atomic Translation (Write-File Overwrite)
+- **Work on Chunks:** Translate one sub-file (or one section) at a time.
+- **Overwrite Mode:** Use the `write_file` tool to write the fully translated content into the sub-files. This avoids the "string not found" errors common with the `replace` tool.
+- **Content Preservation:** Rigorously preserve LaTeX commands, math environments, citations, and references.
 - **Modern Chinese Support (xeCJK)**:
-    - Avoid `ctex` to prevent template style conflicts.
-    - Inject the following into the preamble:
-      ```latex
-      \usepackage{xeCJK}
-      % Platform-specific fonts (Auto-detected based on environment)
-      % Windows: \setCJKmainfont{Microsoft YaHei}
-      % macOS: \setCJKmainfont{PingFang SC}
-      % Linux: \setCJKmainfont{Noto Sans CJK SC}
-      ```
-    - *Font Fallback:* If the specified font causes compilation errors, fallback to `SimSun` (Windows) or `Noto Sans CJK SC` (Linux).
+    - Inject `\usepackage{xeCJK}` and `\setCJKmainfont{Microsoft YaHei}` (or platform equivalent) into the main preamble.
 
 ### 4. Compile & Auto-Fix
-- Use `xelatex -interaction=nonstopmode` for all platforms to leverage `fontspec` and `xeCJK` while preventing compilation hangs on minor errors.
+- Use `xelatex -interaction=nonstopmode`.
 - **Standard compilation loop:** `xelatex` -> `bibtex` -> `xelatex` x2.
-- **Error Auto-Fixing:** If compilation fails (exit code != 0), do not just give up. Read the generated `.log` file, specifically looking for lines starting with `!` (e.g., `! Undefined control sequence.`). Identify the exact line number and file causing the error, use the `replace` tool to fix the LaTeX syntax issue, and recompile.
+- **Error Auto-Fixing:** If compilation fails, read the `.log` file, identify the error line, and fix the corresponding sub-file using `write_file` or `replace`.
 
-### 5. Integrity Verification & Review (Final Gate)
-- **Completeness Check:** Use `grep "\\section" translated/main.tex` and compare the titles against your original checklist from Step 2. If any section title is still in English or missing, you MUST backtrack and fix it before reporting success.
-- **Visual Check:** Compare the translated PDF's visual layout with the original PDF to spot any severe formatting degradation (e.g., images overflowing, missing sections).
-- **Template adjustments:** If Chinese translation causes significant layout overflow, consider suggesting minor layout tweaks (e.g., adding `\small` to a matrix, or ensuring figures use `[t]` or `[h]`).
-- Clean up intermediate files (`.aux`, `.log`, `.out`, etc.) if requested, or move the final `_CN.pdf` to the root directory for easy user access.
+### 5. Integrity Verification & Review
+- **Completeness Check:** Verify all sub-files in `sections/` are translated.
+- **Visual Check:** Compare the translated PDF with the original.
+- Clean up intermediate files and move the final `_CN.pdf` to the root.
 
 ## Guidelines
+- **Prefer `write_file` over `replace` for Translation**: Overwriting a small, dedicated section file is 100% reliable compared to searching for a literal string in a 20,000-line file.
 - **Font Selection**:
-    - On **Windows**: Always prefer `\setCJKmainfont{Microsoft YaHei}` or `SimSun`.
-    - On **macOS**: Always prefer `\setCJKmainfont{PingFang SC}`.
-    - On **Linux**: Always prefer `\setCJKmainfont{Noto Sans CJK SC}`.
-- **Preserve Template**: Modern academic templates are fragile. Using `xeCJK` is less intrusive than `ctex` as it doesn't redefine headers or section spacing by default.
-- **Heredocs**: Use single-quoted heredocs in shells to handle backslashes (`\`) correctly.
+    - Windows: `Microsoft YaHei` or `SimSun`.
+    - macOS: `PingFang SC`.
+    - Linux: `Noto Sans CJK SC`.
+- **Preserve Template**: Use `xeCJK` to minimize style interference.
+- **Heredocs**: Use single-quoted heredocs in shells to handle backslashes correctly.
